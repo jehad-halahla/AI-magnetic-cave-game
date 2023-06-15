@@ -146,7 +146,3 @@ while running:
 
 # Quit the game
 pygame.quit()
-
-#create a function that checks the win condition
-
-    
