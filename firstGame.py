@@ -131,6 +131,7 @@ while running:
                         pygame.draw.rect(screen, GRAY, text_rect)
                         screen.blit(text, text_rect)
                         pygame.display.flip()
+
                 else:
                     # Draw a blue circle for player 2
                     pygame.draw.circle(screen, BLUE, (col * SQUARE_SIZE + SQUARE_SIZE // 2, row * SQUARE_SIZE + SQUARE_SIZE // 2), SQUARE_SIZE // 2)
@@ -139,7 +140,14 @@ while running:
                     #check if player 2 has won
                     if check_win(chessboard):
                         print('Player 2 wins!')
-                        running = False
+                        # Display message in the middle of the screen
+                        font = pygame.font.Font(None, 36)
+                        text = font.render('Player 1 wins!', True, RED)
+                        text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                        #give the text a background
+                        pygame.draw.rect(screen, GRAY, text_rect)
+                        screen.blit(text, text_rect)
+                        pygame.display.flip()
 
             # Update the display
             pygame.display.flip()
