@@ -1,3 +1,4 @@
 #ignore all files with .txt extension
 *.txt
-*.MD
+*.md
+.gitignore
