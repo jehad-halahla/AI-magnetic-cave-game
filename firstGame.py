@@ -21,6 +21,7 @@ pygame.display.set_caption("Chess Board")
 
 # Create a 2D list to represent the chessboard
 chessboard = [['' for _ in range(8)] for _ in range(8)]
+
 def check_win(board):
     # A player wins if they have 4 in a row
 
