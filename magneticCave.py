@@ -23,7 +23,7 @@ WINDOW = 5
 gameBoard = [[0 for _ in range(8)] for _ in range(8)]
 
 
-def check_win(board):
+def check_win(board, piece):
     # A player wins if they have 4 in a row
 
     # Check horizontal spaces
@@ -35,7 +35,7 @@ def check_win(board):
                 == board[y][x + 2]
                 == board[y][x + 3]
                 == board[y][x + 4]
-                != 0
+                == piece
             ):
                 # Game over
                 return True
@@ -49,7 +49,7 @@ def check_win(board):
                 == board[y + 2][x]
                 == board[y + 3][x]
                 == board[y + 4][x]
-                != 0
+                == piece
             ):
                 # Game over
                 return True
@@ -63,7 +63,7 @@ def check_win(board):
                 == board[y - 2][x + 2]
                 == board[y - 3][x + 3]
                 == board[y - 4][x + 4]
-                != 0
+                == piece
             ):
                 # Game over
                 return True
@@ -77,12 +77,13 @@ def check_win(board):
                 == board[y + 2][x + 2]
                 == board[y + 3][x + 3]
                 == board[y + 4][x + 4]
-                != 0
+                == piece
             ):
                 # Game over
                 return True
 
     return False
+
 
 def valid_moves(board):
     # This function will return a list of valid moves
@@ -134,9 +135,6 @@ def display_winner(player):
     screen.blit(text, text_rect)
     pygame.display.flip()
 def position_score(board,current_player):
-    # This function will return a score for a given position
-    # A position is better if it is closer to the center of the board
-    #we will use a sliding window to check for the score
     score = 0
     piece = current_player + 1
     for r in range(ROW_COUNT):
@@ -206,49 +204,54 @@ def pick_best_move(board, current_player):
             best_move = move
     return  best_move
 def terminal_node(board):
-    return check_win(board) or len(valid_moves(board)) == 0
+    return check_win(board,1) or check_win(board, 2) or len(valid_moves(board)) == 0
 
-# def minimax(board, depth, alpha, beta, maximizingPlayer):
-#     valid_locations = valid_moves(board)
-#     is_terminal = terminal_node(board)
-#     if depth == 0 or is_terminal:
-#         if is_terminal:
-#             if check_win(board):
-#                 return (None, 100000000000000)
-#             else:
-#                 return (None, 0)
-#         else:
-#             return (None, position_score(board,1))
-#     if maximizingPlayer:
-#         value = -math.inf
-#         column = random.choice(valid_locations)
-#         for col in valid_locations:
-#             row = get_next_open_row(board,col)
-#             b_copy = copy.deepcopy(board)
-#             b_copy[row][col] = 1
-#             new_score = minimax(b_copy,depth-1,alpha,beta,False)[1]
-#             if new_score > value:
-#                 value = new_score
-#                 column = col
-#             alpha = max(alpha,value)
-#             if alpha >= beta:
-#                 break
-#         return column,value
-#     else:
-#         value = math.inf
-#         column = random.choice(valid_locations)
-#         for col in valid_locations:
-#             row = get_next_open_row(board,col)
-#             b_copy = copy.deepcopy(board)
-#             b_copy[row][col] = 2
-#             new_score = minimax(b_copy,depth-1,alpha,beta,True)[1]
-#             if new_score < value:
-#                 value = new_score
-#                 column = col
-#             beta = min(beta,value)
-#             if alpha >= beta:
-#                 break
-#         return column,value
+#the superstar ! , the minimax algorithm
+def minimax(board, depth, alpha, beta, maximizingPlayer):
+    validMoves = valid_moves(board)
+    is_terminal = terminal_node(board)
+    if depth == 0 or is_terminal:
+        if is_terminal:
+            if check_win(board, 2):
+                return (None, 100000000000000) # computer wins
+            elif check_win(board, 1):
+                return (None, -10000000000000) #player wins
+            else:
+                return (None, 0) #game is over, draw
+        else: #depth is zero
+            return (None, position_score(board,2))
+    if maximizingPlayer:
+        value = -math.inf
+        move = random.choice(validMoves)
+        for m in validMoves:
+            row = m[0]
+            col = m[1]
+            temp_board = copy.deepcopy(board)
+            temp_board[row][col] = 2
+            new_score = minimax(temp_board, depth - 1, alpha, beta, False)[1]
+            if new_score > value:
+                value = new_score
+                move = m
+            alpha = max(alpha, value)
+            if alpha >= beta:
+                break
+        return move, value
+    else: #minimizing player
+        value = math.inf
+        move = random.choice(validMoves)
+        for m in validMoves:
+            row = m[0]
+            col = m[1]
+            temp_board = copy.deepcopy(board)
+            temp_board[row][col] = 1
+            new_score = minimax(temp_board, depth - 1,  alpha, beta, True)[1]
+            if new_score < value:
+                value = new_score
+                move = m
+            beta = min(beta, value)
+            if alpha >= beta:
+                break
+        return move, value
        
 
 while True:
@@ -293,7 +296,7 @@ while running:
             if (row, col) in valid_moves(gameBoard):
                 place_piece(row, col, current_player + 1)
 
-                if check_win(gameBoard):
+                if check_win(gameBoard, current_player + 1):
                     display_winner(current_player + 1)
                     game_over = True
 
@@ -304,11 +307,10 @@ while running:
     if current_player == 1 and (gameMode == 2 or gameMode == 3) and not game_over:
         validMoves = valid_moves(gameBoard)
         print(validMoves)
-        #move = random.choice(validMoves)
-        move = pick_best_move(gameBoard, current_player)
+        move = minimax(gameBoard, 4, -math.inf, math.inf, True)[0]
         print(move)
         place_piece(move[0], move[1], (current_player + 1))
-        if check_win(gameBoard):
+        if check_win(gameBoard, current_player + 1):
             display_winner(current_player + 1)
             game_over = True
         current_player = (current_player + 1) % 2
