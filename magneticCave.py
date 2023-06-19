@@ -147,7 +147,7 @@ def position_score(board,current_player):
    
 
     score = 2*center_array1.count(piece) + 2*center_array2.count(piece)
-    score -= 2*center_array1.count(piece - 1) + 2*center_array2.count(piece - 1)
+    #score -= 2*center_array1.count(piece - 1) + 2*center_array2.count(piece - 1)
 
     for r in range(ROW_COUNT):
         row_array = [int(i) for i in list(board[r])]
@@ -156,13 +156,13 @@ def position_score(board,current_player):
             if window.count(piece) == 5:
                 score += 100
             elif window.count(piece) == 4 and window.count(0) == 1:
-                score += 15
+                score += 5
             elif window.count(piece) == 3 and window.count(0) == 2:
-                score += 10
+                score += 2
             elif window.count(piece - 1) == 4 and window.count(0) == 1:
-                score -= 95
+                score -= 90
             elif window.count(piece - 1) == 3 and window.count(0) == 2:
-                score -= 13
+                score -= 3
 
     for c in range(COLOUMN_COUNT):
         col_array = []
@@ -174,13 +174,13 @@ def position_score(board,current_player):
             if window.count(piece) == 5:
                 score += 100
             elif window.count(piece) == 4 and window.count(0) == 1:
-                score += 15
+                score += 5
             elif window.count(piece) == 3 and window.count(0) == 2:
-                score += 10
+                score += 3
             elif window.count(piece - 1) == 4 and window.count(0) == 1:
-                score -= 95
+                score -= 90
             elif window.count(piece - 1) == 3 and window.count(0) == 2:
-                score -= 13
+                score -= 2
     # now we will check for positive diagonal
     for r in range(ROW_COUNT - 4):
         for c in range(COLOUMN_COUNT - 4):
@@ -188,11 +188,13 @@ def position_score(board,current_player):
             if window.count(piece) == 5:
                score += 100
             elif window.count(piece) == 4 and window.count(0) == 1:
-                score += 15
+                score += 5
             elif window.count(piece) == 3 and window.count(0) == 2:
-                score += 10
+                score += 3
             elif window.count(piece-1) == 4 and window.count(0) == 1:
-                score -= 95
+                score -= 90
+            elif window.count(piece-1) == 3 and window.count(0) == 2:
+                score -= 2
     #now we will check for negative diagonal
     for r in range(ROW_COUNT - 4):
         for c in range(COLOUMN_COUNT - 4):
@@ -200,12 +202,14 @@ def position_score(board,current_player):
             if window.count(piece) == 5:
                 score += 100
             elif window.count(piece) == 4 and window.count(0) == 1:
-                score += 15
+                score += 5
             elif window.count(piece) == 3 and window.count(0) == 2:
-                score += 10
+                score += 2
             elif window.count(piece-1) == 4 and window.count(0) == 1:
-                score -= 95
-    print(score)
+                score -= 90
+            elif window.count(piece-1) == 3 and window.count(0) == 2:
+                score -= 2
+    #print(score)
     return score
 
 
@@ -226,7 +230,6 @@ def pick_best_move(board, current_player):
 def terminal_node(board):
     return check_win(board,1) or check_win(board, 2) or len(valid_moves(board)) == 0
 
-#the superstar ! , the minimax algorithm
 
 #the superstar ! , the minimax algorithm
 def minimax(board, depth, alpha, beta, maximizingPlayer):
@@ -329,7 +332,7 @@ while running:
     if current_player == 1 and (gameMode == 2 or gameMode == 3) and not game_over:
         validMoves = valid_moves(gameBoard)
         print(validMoves)
-        move, score = minimax(gameBoard, 2, -math.inf, math.inf, True)
+        move, score = minimax(gameBoard, 4, -math.inf, math.inf, True)
         #move = pick_best_move(gameBoard, current_player)
         print(move)
         print(score)
