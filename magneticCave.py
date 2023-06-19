@@ -134,9 +134,21 @@ def display_winner(player):
     pygame.draw.rect(screen, GRAY, text_rect)
     screen.blit(text, text_rect)
     pygame.display.flip()
+
+
 def position_score(board,current_player):
     score = 0
     piece = current_player + 1
+    #we will give higer score to the pieces that are closer to the center
+    
+    #score for center row
+    center_array1 = [int(board[3][0]), int(board[3][ROW_COUNT - 1])]
+    center_array2 = [int(board[4][0]), int(board[4][ROW_COUNT - 1])]
+   
+
+    score = 2*center_array1.count(piece) + 2*center_array2.count(piece)
+    score -= 2*center_array1.count(piece - 1) + 2*center_array2.count(piece - 1)
+
     for r in range(ROW_COUNT):
         row_array = [int(i) for i in list(board[r])]
         for c in range(COLOUMN_COUNT - 4):
@@ -148,33 +160,39 @@ def position_score(board,current_player):
             elif window.count(piece) == 3 and window.count(0) == 2:
                 score += 10
             elif window.count(piece - 1) == 4 and window.count(0) == 1:
-                score -= 90
-            
+                score -= 95
+            elif window.count(piece - 1) == 3 and window.count(0) == 2:
+                score -= 13
 
     for c in range(COLOUMN_COUNT):
+        col_array = []
+        for r in range(ROW_COUNT):
+            col_array.append(board[r][c])
         for r in range(ROW_COUNT - 4):
-            window = [board[row][c] for row in range(r, r+5)]
+            #col_array is the coloumn in each row
+            window = col_array[r:r+WINDOW]
             if window.count(piece) == 5:
                 score += 100
             elif window.count(piece) == 4 and window.count(0) == 1:
                 score += 15
             elif window.count(piece) == 3 and window.count(0) == 2:
                 score += 10
-            elif window.count(piece-1) == 4 and window.count(0) == 1:
-                score -= 90
-                
-    #now we will check for positive diagonal
+            elif window.count(piece - 1) == 4 and window.count(0) == 1:
+                score -= 95
+            elif window.count(piece - 1) == 3 and window.count(0) == 2:
+                score -= 13
+    # now we will check for positive diagonal
     for r in range(ROW_COUNT - 4):
         for c in range(COLOUMN_COUNT - 4):
             window = [board[r+i][c+i] for i in range(5)]
             if window.count(piece) == 5:
                score += 100
             elif window.count(piece) == 4 and window.count(0) == 1:
-                score += 20
+                score += 15
             elif window.count(piece) == 3 and window.count(0) == 2:
                 score += 10
             elif window.count(piece-1) == 4 and window.count(0) == 1:
-                score -= 90
+                score -= 95
     #now we will check for negative diagonal
     for r in range(ROW_COUNT - 4):
         for c in range(COLOUMN_COUNT - 4):
@@ -182,29 +200,33 @@ def position_score(board,current_player):
             if window.count(piece) == 5:
                 score += 100
             elif window.count(piece) == 4 and window.count(0) == 1:
-                score += 20
+                score += 15
             elif window.count(piece) == 3 and window.count(0) == 2:
                 score += 10
             elif window.count(piece-1) == 4 and window.count(0) == 1:
-                score -= 90
+                score -= 95
     print(score)
-    return score 
+    return score
+
+
 def pick_best_move(board, current_player):
-    max_score = 0
+    max_score = -math.inf
     validMoves = valid_moves(board)
     best_move = random.choice(validMoves)
     for move in validMoves:
         row = move[0]
         col = move[1]
         temp_board = copy.deepcopy(board)
-        temp_board[row][col] = current_player + 1
+        temp_board[row][col] = (current_player + 1)
         score = position_score(temp_board,current_player)
-        if score >= max_score:
+        if score > max_score:
             max_score = score
             best_move = move
     return  best_move
 def terminal_node(board):
     return check_win(board,1) or check_win(board, 2) or len(valid_moves(board)) == 0
+
+#the superstar ! , the minimax algorithm
 
 #the superstar ! , the minimax algorithm
 def minimax(board, depth, alpha, beta, maximizingPlayer):
@@ -219,7 +241,7 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
             else:
                 return (None, 0) #game is over, draw
         else: #depth is zero
-            return (None, position_score(board,2))
+            return (None, position_score(board,1))
     if maximizingPlayer:
         value = -math.inf
         move = random.choice(validMoves)
@@ -307,8 +329,10 @@ while running:
     if current_player == 1 and (gameMode == 2 or gameMode == 3) and not game_over:
         validMoves = valid_moves(gameBoard)
         print(validMoves)
-        move = minimax(gameBoard, 4, -math.inf, math.inf, True)[0]
+        move, score = minimax(gameBoard, 2, -math.inf, math.inf, True)
+        #move = pick_best_move(gameBoard, current_player)
         print(move)
+        print(score)
         place_piece(move[0], move[1], (current_player + 1))
         if check_win(gameBoard, current_player + 1):
             display_winner(current_player + 1)
